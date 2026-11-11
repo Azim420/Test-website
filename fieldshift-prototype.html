@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#123d2d" />
+  <title>FieldShift — Agricultural Intelligence</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://server.arcgisonline.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--forest:#123d2d;--forest2:#1c5940;--leaf:#75a96b;--mint:#e8f1e7;--paper:#f7f8f3;--ink:#17251d;--muted:#718077;--line:#e5eae3;--gold:#e7b84e;--red:#d96a51;--shadow:0 18px 50px rgba(25,54,37,.08)}
+    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:var(--paper);color:var(--ink);font-family:"DM Sans",sans-serif}
+    button,input{font:inherit} button{cursor:pointer}
+    .shell{min-height:100vh}.sidebar{position:fixed;inset:0 auto 0 0;width:250px;background:var(--forest);color:#fff;padding:28px 20px;display:flex;flex-direction:column;z-index:1000}
+    .brand{display:flex;align-items:center;gap:11px;padding:0 10px 34px}.brand-mark{width:38px;height:38px;border-radius:12px;background:#d8ead2;color:var(--forest);display:grid;place-items:center;font-size:22px}.brand-name{font:800 20px Manrope,sans-serif;letter-spacing:-.7px}.brand-name span{color:#a9d29d}
+    .nav-label{font-size:10px;letter-spacing:1.8px;color:#9ab3a2;font-weight:700;padding:0 12px 12px}.nav{display:grid;gap:7px}.nav button{border:0;background:transparent;color:#c5d5c9;text-align:left;padding:12px;border-radius:11px;display:flex;align-items:center;gap:12px;font-weight:600;font-size:13px}.nav button:hover,.nav button.active{background:rgba(255,255,255,.12);color:white}.nav .ico{width:19px;text-align:center;font-size:16px}
+    .side-bottom{margin-top:auto}.data-note{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px;font-size:11px;line-height:1.6;color:#d4e1d7}.data-note strong{display:block;color:#fff;font-size:12px;margin-bottom:4px}.profile{display:flex;align-items:center;gap:10px;padding:18px 8px 0;margin-top:18px;border-top:1px solid rgba(255,255,255,.15);font-size:12px}.avatar{width:30px;height:30px;border-radius:50%;background:#d8ead2;color:var(--forest);display:grid;place-items:center;font-weight:800}
+    main{margin-left:250px;padding:0 42px 55px;max-width:1600px}.topbar{height:82px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);margin-bottom:34px}.crumb{font-size:12px;color:var(--muted)}.crumb b{color:var(--ink)}.top-right{display:flex;align-items:center;gap:12px}.live-pill{font-size:11px;font-weight:700;color:#39734a;background:#e5f1e4;padding:8px 11px;border-radius:30px}.date{font-size:12px;color:var(--muted)}
+    .page{display:none;animation:fade .3s ease}.page.active{display:block}@keyframes fade{from{opacity:.35;transform:translateY(5px)}to{opacity:1;transform:none}}
+    .eyebrow{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#668a69;font-weight:800;margin-bottom:12px}.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:26px;align-items:stretch;margin-bottom:30px}.hero-copy{padding:24px 0}.hero h1{font:800 clamp(34px,4vw,56px)/1.08 Manrope,sans-serif;letter-spacing:-2.5px;margin:0 0 18px;color:var(--forest)}.hero h1 em{font-style:normal;color:#7ba66e}.hero p{max-width:530px;color:var(--muted);font-size:14px;line-height:1.8;margin:0 0 25px}.btn{border:0;border-radius:10px;padding:12px 17px;background:var(--forest);color:white;font-size:12px;font-weight:700;box-shadow:0 7px 16px rgba(18,61,45,.14)}.btn:hover{background:var(--forest2);transform:translateY(-1px)}.btn.secondary{background:white;color:var(--forest);border:1px solid var(--line);box-shadow:none}.hero-visual{min-height:260px;border-radius:20px;overflow:hidden;position:relative;background:linear-gradient(130deg,rgba(13,52,36,.15),rgba(13,52,36,.7)),url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=85') center/cover;box-shadow:var(--shadow)}.visual-caption{position:absolute;bottom:18px;left:19px;color:white}.visual-caption small{display:block;opacity:.8;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}.visual-caption strong{font:700 17px Manrope}
+    .section-head{display:flex;align-items:end;justify-content:space-between;margin:35px 0 16px}.section-head h2{font:800 21px Manrope;margin:0;color:var(--forest);letter-spacing:-.5px}.section-head p{font-size:12px;color:var(--muted);margin:6px 0 0}.text-link{color:#4f8154;font-size:12px;font-weight:700;border:0;background:none}
+    .grid{display:grid;gap:16px}.grid.four{grid-template-columns:repeat(4,1fr)}.grid.two{grid-template-columns:1.25fr .75fr}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:19px;box-shadow:0 5px 20px rgba(25,54,37,.025)}.metric-top{display:flex;justify-content:space-between;align-items:center}.metric-icon{width:34px;height:34px;border-radius:10px;background:var(--mint);display:grid;place-items:center;font-size:16px}.trend{font-size:10px;color:var(--muted)}.metric-label{font-size:11px;color:var(--muted);margin:14px 0 5px}.metric-value{font:800 27px Manrope;color:var(--forest);letter-spacing:-1px}.metric-sub{font-size:10px;color:var(--muted);margin-top:5px}.status{font-size:10px;font-weight:800;padding:5px 8px;border-radius:20px;background:#fff0e9;color:#b95c43}.status.good{background:#e8f3e7;color:#477b4a}.status.warn{background:#fff5df;color:#9b741e}
+    .map-card{padding:0;overflow:hidden}.map-toolbar{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}.map-toolbar strong{font:700 13px Manrope}.map-toolbar span{font-size:10px;color:var(--muted)}#map{height:350px;width:100%;background:#e5ece3}.map-legend{display:flex;gap:15px;padding:12px 18px;font-size:10px;color:var(--muted)}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}.field-panel h3{font:700 15px Manrope;margin:0 0 6px}.field-panel>p{font-size:11px;color:var(--muted);line-height:1.6;margin:0 0 16px}.field-row{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:12px 0;font-size:11px}.field-row span{color:var(--muted)}.field-row b{color:var(--forest)}.alert{background:#fff8ec;border:1px solid #f1e2c1;border-radius:14px;padding:16px;margin-top:15px}.alert-title{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:#906b20}.alert p{font-size:11px;line-height:1.7;color:#766b53;margin:9px 0 0}
+    .bar-list{display:grid;gap:16px}.bar-head{display:flex;justify-content:space-between;font-size:11px;margin-bottom:7px}.bar-head span{color:var(--muted)}.bar{height:7px;border-radius:9px;background:#edf1eb;overflow:hidden}.bar i{display:block;height:100%;border-radius:9px;background:#79a66d}.bar i.gold{background:#e2b44b}.bar i.red{background:#d9795d}
+    .page-title{display:flex;justify-content:space-between;align-items:end;margin:4px 0 25px}.page-title h1{font:800 32px Manrope;color:var(--forest);margin:0;letter-spacing:-1.2px}.page-title p{color:var(--muted);font-size:12px;margin:7px 0 0}.searchbar{display:flex;gap:9px;margin-bottom:16px}.searchbar input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:white;outline:none;font-size:12px}.searchbar input:focus{border-color:#8fb38a}.map-large #map{height:470px}.map-help{font-size:11px;color:var(--muted);margin:10px 2px 0}
+    .analysis-banner{background:var(--forest);color:white;border-radius:18px;padding:22px 25px;display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.analysis-banner small{font-size:10px;letter-spacing:1.5px;color:#b9d3bc;text-transform:uppercase}.analysis-banner h2{font:800 22px Manrope;margin:7px 0}.analysis-banner p{font-size:11px;color:#d1dfd3;margin:0}.score{width:92px;height:92px;border:6px solid #80aa73;border-left-color:#456b4d;border-radius:50%;display:grid;place-items:center;font:800 25px Manrope}.score small{font:500 9px DM Sans;display:block;letter-spacing:0;text-transform:none;color:#d1dfd3;text-align:center}
+    .insight{display:flex;gap:12px;padding:15px 0;border-bottom:1px solid var(--line)}.insight:last-child{border:0}.insight-icon{width:32px;height:32px;border-radius:10px;background:#fff3e6;display:grid;place-items:center;flex:none}.insight strong{font-size:12px}.insight p{font-size:11px;color:var(--muted);line-height:1.6;margin:5px 0 0}.guide-card{display:flex;gap:13px;padding:16px;border:1px solid var(--line);border-radius:13px;margin-top:11px}.guide-number{width:27px;height:27px;border-radius:8px;background:var(--mint);display:grid;place-items:center;color:var(--forest);font-weight:800;font-size:11px;flex:none}.guide-card strong{font-size:12px}.guide-card p{font-size:11px;color:var(--muted);line-height:1.6;margin:5px 0 0}
+    .source-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.source{border:1px solid var(--line);border-radius:13px;padding:16px;background:white}.source b{font:700 13px Manrope;color:var(--forest)}.source small{display:block;color:var(--muted);font-size:10px;margin:5px 0 9px}.source p{font-size:11px;color:var(--muted);line-height:1.6;margin:0}
+    footer{border-top:1px solid var(--line);margin-top:48px;padding-top:18px;display:flex;justify-content:space-between;color:#89958d;font-size:10px}
+    @media(max-width:1050px){.sidebar{width:210px}main{margin-left:210px;padding:0 25px 40px}.grid.four{grid-template-columns:repeat(2,1fr)}.hero{grid-template-columns:1fr}.hero-visual{min-height:220px}}
+    @media(max-width:700px){.sidebar{position:static;width:auto;height:auto;padding:14px 16px}.brand{padding:0 5px 12px}.nav-label,.side-bottom{display:none}.nav{display:flex;overflow:auto}.nav button{white-space:nowrap;padding:9px 11px;font-size:11px}.nav .ico{display:none}main{margin:0;padding:0 16px 30px}.topbar{height:58px;margin-bottom:20px}.date{display:none}.hero{gap:10px}.hero-copy{padding:10px 0}.hero h1{font-size:38px}.grid.two{grid-template-columns:1fr}.grid.four{gap:10px}.card{padding:14px}.metric-value{font-size:23px}.page-title{align-items:start;gap:12px;flex-direction:column}.analysis-banner{padding:17px}.score{width:78px;height:78px;font-size:21px;flex:none}.source-grid{grid-template-columns:1fr}footer{gap:10px;flex-direction:column}.map-large #map{height:390px}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">🌱</div><div class="brand-name">Field<span>Shift</span></div></div>
+    <div class="nav-label">WORKSPACE</div>
+    <nav class="nav">
+      <button class="active" data-page="home"><span class="ico">⌂</span> Home</button>
+      <button data-page="explorer"><span class="ico">◎</span> Field Explorer</button>
+      <button data-page="analysis"><span class="ico">◫</span> Field Analysis</button>
+      <button data-page="guide"><span class="ico">✳</span> Adaptation Guide</button>
+    </nav>
+    <div class="side-bottom">
+      <div class="data-note"><strong>🛰️ Earth observation</strong>Prototype mode is using illustrative demonstration values. NASA data integration is planned for a later phase.</div>
+      <div class="profile"><div class="avatar">F</div><div><b>FieldShift</b><br><span style="color:#a9c0af">Agricultural intelligence</span></div></div>
+    </div>
+  </aside>
+  <main>
+    <div class="topbar"><div class="crumb">Workspace&nbsp; / &nbsp;<b id="crumb">Home</b></div><div class="top-right"><span class="live-pill">● DEMO MODE</span><span class="date" id="today"></span></div></div>
+
+    <section class="page active" id="home">
+      <div class="hero">
+        <div class="hero-copy"><div class="eyebrow">AGRICULTURAL INTELLIGENCE PLATFORM</div><h1>Know your field.<br><em>Shift your future.</em></h1><p>FieldShift turns Earth observation data into clear, explainable insights—helping farmers understand changing field conditions and plan smarter adaptation.</p><button class="btn" data-go="explorer">Explore your field&nbsp; →</button></div>
+        <div class="hero-visual"><div class="visual-caption"><small>Earth observation · Field intelligence</small><strong>See the signals behind the soil.</strong></div></div>
+      </div>
+      <div class="section-head"><div><h2>Field snapshot</h2><p>A quick look at the selected demonstration field.</p></div><button class="text-link" data-go="analysis">View full analysis&nbsp; ↗</button></div>
+      <div class="grid four">
+        <div class="card"><div class="metric-top"><div class="metric-icon">🌿</div><span class="status good">Good</span></div><div class="metric-label">Field health</div><div class="metric-value">72<span style="font-size:14px;color:#8b9a8e">/100</span></div><div class="metric-sub">Overall field condition</div></div>
+        <div class="card"><div class="metric-top"><div class="metric-icon">💧</div><span class="status warn">Moderate</span></div><div class="metric-label">Water stress</div><div class="metric-value">Moderate</div><div class="metric-sub">Soil moisture trending down</div></div>
+        <div class="card"><div class="metric-top"><div class="metric-icon">☀️</div><span class="status">High</span></div><div class="metric-label">Heat risk</div><div class="metric-value">High</div><div class="metric-sub">Elevated surface temperature</div></div>
+        <div class="card"><div class="metric-top"><div class="metric-icon">🌱</div><span class="status warn">Declining</span></div><div class="metric-label">Vegetation</div><div class="metric-value">Declining</div><div class="metric-sub">Recent vegetation signal</div></div>
+      </div>
+      <div class="section-head"><div><h2>Field overview</h2><p>Explore the sample location and its current indicators.</p></div></div>
+      <div class="grid two">
+        <div class="card map-card"><div class="map-toolbar"><strong>Selected field location</strong><span id="home-coords">Kota Bharu, Malaysia · Demo field</span></div><div id="home-map" style="height:290px"></div><div class="map-legend"><span><i class="dot" style="background:#d96a51"></i>Heat watch</span><span><i class="dot" style="background:#75a96b"></i>Selected field</span></div></div>
+        <div class="card field-panel"><h3>Explainable field alert</h3><p>FieldShift connects environmental signals to a clear reason, not just a risk label.</p><div class="field-row"><span>Rainfall</span><b>Below baseline</b></div><div class="field-row"><span>Soil moisture</span><b>Declining</b></div><div class="field-row"><span>Surface temperature</span><b>Elevated</b></div><div class="alert"><div class="alert-title">⚠ Heat and water stress watch</div><p>Why this alert? Rainfall is below the illustrative historical baseline, soil moisture is declining, and land-surface temperature is elevated. Together, these signals may indicate increasing crop stress.</p></div></div>
+      </div>
+    </section>
+
+    <section class="page" id="explorer">
+      <div class="page-title"><div><div class="eyebrow">LOCATION WORKSPACE</div><h1>Field Explorer</h1><p>Select a field on the map to set the area for analysis.</p></div><span class="live-pill">INTERACTIVE MAP</span></div>
+      <div class="searchbar"><input id="location-search" placeholder="Search a place (e.g. Kota Bharu, Malaysia)" value="Kota Bharu, Malaysia"><button class="btn" id="search-btn">Find location</button><button class="btn secondary" id="reset-map">Reset</button></div>
+      <div class="card map-card map-large"><div class="map-toolbar"><div><strong>Satellite field map</strong><br><span>Click anywhere on the map to select a field location.</span></div><span>Imagery layer · Esri</span></div><div id="map"></div><div class="map-legend"><span><i class="dot" style="background:#75a96b"></i>Selected location</span><span>Coordinates update when you select a point</span></div></div>
+      <p class="map-help">Selected location: <b id="selected-location">Kota Bharu, Malaysia</b> · <span id="selected-coords">6.1254° N, 102.2386° E</span></p>
+      <div style="margin-top:18px;display:flex;justify-content:flex-end"><button class="btn" id="analyze-btn">Analyze this field&nbsp; →</button></div>
+    </section>
+
+    <section class="page" id="analysis">
+      <div class="page-title"><div><div class="eyebrow">ENVIRONMENTAL SIGNALS</div><h1>Field Analysis</h1><p>Understand what the observed indicators may mean for your field.</p></div><span class="live-pill">ILLUSTRATIVE DATA</span></div>
+      <div class="analysis-banner"><div><small>FIELD HEALTH SCORE</small><h2>Conditions need attention</h2><p>Selected field · <span id="analysis-location">Kota Bharu, Malaysia</span></p></div><div class="score">72<small>out of 100</small></div></div>
+      <div class="grid four" style="margin-bottom:18px">
+        <div class="card"><div class="metric-label">Rainfall · 30 days</div><div class="metric-value">86 <small style="font:500 12px DM Sans">mm</small></div><div class="metric-sub">Illustrative · below baseline</div></div>
+        <div class="card"><div class="metric-label">Soil moisture</div><div class="metric-value">24<span style="font-size:13px">%</span></div><div class="metric-sub">Illustrative · declining</div></div>
+        <div class="card"><div class="metric-label">Land surface temp.</div><div class="metric-value">38<span style="font-size:13px">°C</span></div><div class="metric-sub">Illustrative · elevated</div></div>
+        <div class="card"><div class="metric-label">Vegetation index</div><div class="metric-value">0.42</div><div class="metric-sub">Illustrative · declining</div></div>
+      </div>
+      <div class="grid two">
+        <div class="card"><h3 style="font:700 14px Manrope;margin:0 0 20px">Environmental indicators</h3><div class="bar-list">
+          <div><div class="bar-head"><b>Rainfall compared with baseline</b><span>58%</span></div><div class="bar"><i class="gold" style="width:58%"></i></div></div>
+          <div><div class="bar-head"><b>Soil moisture signal</b><span>24%</span></div><div class="bar"><i class="red" style="width:24%"></i></div></div>
+          <div><div class="bar-head"><b>Heat exposure indicator</b><span>82%</span></div><div class="bar"><i class="red" style="width:82%"></i></div></div>
+          <div><div class="bar-head"><b>Vegetation condition</b><span>42%</span></div><div class="bar"><i class="gold" style="width:42%"></i></div></div>
+        </div><p style="font-size:10px;color:var(--muted);line-height:1.6;margin:18px 0 0">Bars are illustrative normalized indicators for the prototype, not calibrated measurements or a validated crop model.</p></div>
+        <div class="card"><h3 style="font:700 14px Manrope;margin:0 0 8px">Why this field is flagged</h3><div class="insight"><div class="insight-icon">🌧️</div><div><strong>Rainfall is below baseline</strong><p>Recent rainfall is represented as lower than the reference period, which may reduce available water.</p></div></div><div class="insight"><div class="insight-icon">💧</div><div><strong>Soil moisture is declining</strong><p>Lower moisture can limit water available to plant roots, depending on soil and crop type.</p></div></div><div class="insight"><div class="insight-icon">🌡️</div><div><strong>Surface temperature is elevated</strong><p>Higher surface temperature can increase evaporative demand and heat stress risk.</p></div></div></div>
+      </div>
+    </section>
+
+    <section class="page" id="guide">
+      <div class="page-title"><div><div class="eyebrow">FROM INSIGHT TO ACTION</div><h1>Adaptation Guide</h1><p>Practical next steps based on the demonstration field signals.</p></div><span class="live-pill">CONTEXTUAL GUIDANCE</span></div>
+      <div class="card" style="background:#edf4e9;border-color:#dce9d8;margin-bottom:17px"><div class="eyebrow">CURRENT FIELD SIGNAL</div><h2 style="font:800 22px Manrope;color:var(--forest);margin:0 0 8px">Moderate water stress · High heat risk</h2><p style="font-size:12px;line-height:1.7;color:#607466;margin:0">The sample indicators suggest monitoring water availability and heat exposure. Recommendations below are general options to discuss with local agricultural advisers.</p></div>
+      <div class="grid two">
+        <div class="card"><h3 style="font:700 15px Manrope;margin:0 0 5px">Suggested adaptation actions</h3><div class="guide-card"><div class="guide-number">1</div><div><strong>Check soil moisture on the ground</strong><p>Compare the satellite signal with field measurements at several points and at crop-root depth.</p></div></div><div class="guide-card"><div class="guide-number">2</div><div><strong>Review irrigation timing</strong><p>If irrigation is available, review schedules with local guidance and prioritize crop growth stages that are most sensitive to water stress.</p></div></div><div class="guide-card"><div class="guide-number">3</div><div><strong>Monitor heat exposure</strong><p>Track local weather forecasts and inspect crops for signs of heat stress during warmer periods.</p></div></div><div class="guide-card"><div class="guide-number">4</div><div><strong>Track vegetation changes</strong><p>Compare vegetation indicators over time and investigate unusual changes with an on-site field check.</p></div></div></div>
+        <div class="card"><h3 style="font:700 15px Manrope;margin:0 0 5px">Data behind FieldShift</h3><p style="font-size:11px;color:var(--muted);line-height:1.6;margin:0 0 15px">These NASA Earth-observation missions are candidates for a future live-data integration.</p><div class="source-grid"><div class="source"><b>GPM IMERG</b><small>Rainfall</small><p>Satellite-based precipitation estimates to help monitor rainfall patterns.</p></div><div class="source"><b>SMAP</b><small>Soil moisture</small><p>Observations of near-surface soil moisture over broad areas.</p></div><div class="source"><b>MODIS</b><small>Temperature & vegetation</small><p>Land-surface temperature and vegetation-related observations.</p></div><div class="source"><b>VIIRS</b><small>Vegetation monitoring</small><p>Additional satellite observations useful for tracking land conditions.</p></div></div></div>
+      </div>
+      <div class="alert" style="margin-top:18px"><div class="alert-title">Important: decision support, not a diagnosis</div><p>Satellite products have different spatial resolutions, update frequencies, and uncertainty. FieldShift's prototype scores are not validated agricultural advice. Confirm satellite signals with local measurements, crop knowledge, and qualified agricultural guidance before making farm-management decisions.</p></div>
+    </section>
+    <footer><span>© 2026 FieldShift · Agricultural intelligence for a changing climate</span><span>Prototype interface · Demonstration data only</span></footer>
+  </main>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const pages=['home','explorer','analysis','guide'];
+  const labels={home:'Home',explorer:'Field Explorer',analysis:'Field Analysis',guide:'Adaptation Guide'};
+  function showPage(name){pages.forEach(p=>document.getElementById(p).classList.toggle('active',p===name));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===name));document.getElementById('crumb').textContent=labels[name];setTimeout(()=>{if(window.fieldMap)fieldMap.invalidateSize();if(window.homeMap)homeMap.invalidateSize()},80);window.scrollTo({top:0,behavior:'smooth'});}
+  document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+  document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.go)));
+  document.getElementById('today').textContent=new Intl.DateTimeFormat('en',{weekday:'short',month:'short',day:'numeric'}).format(new Date());
+  const start=[6.1254,102.2386];let selected=[...start],marker;
+  const imagery='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+  function baseMap(id,zoom){const m=L.map(id,{scrollWheelZoom:false}).setView(start,zoom);L.tileLayer(imagery,{maxZoom:19,attribution:'Tiles © Esri'}).addTo(m);return m;}
+  function setMarker(map,coords){if(marker)map.removeLayer(marker);marker=L.circleMarker(coords,{radius:9,color:'#fff',weight:3,fillColor:'#75a96b',fillOpacity:1}).addTo(map);marker.bindPopup('Selected FieldShift location').openPopup();}
+  window.homeMap=baseMap('home-map',11);L.circle(start,{radius:700,color:'#75a96b',weight:1,fillColor:'#75a96b',fillOpacity:.12}).addTo(homeMap);L.circleMarker(start,{radius:7,color:'#fff',weight:2,fillColor:'#75a96b',fillOpacity:1}).addTo(homeMap);
+  window.fieldMap=baseMap('map',11);setMarker(fieldMap,start);
+  function updateLocation(coords,name){selected=coords;setMarker(fieldMap,coords);document.getElementById('selected-location').textContent=name||'Selected map location';document.getElementById('selected-coords').textContent=coords[0].toFixed(4)+'° '+(coords[0]>=0?'N':'S')+', '+Math.abs(coords[1]).toFixed(4)+'° '+(coords[1]>=0?'E':'W');document.getElementById('home-coords').textContent=(name||'Selected map location')+' · Demo field';document.getElementById('analysis-location').textContent=name||'Selected map location';}
+  fieldMap.on('click',e=>updateLocation([e.latlng.lat,e.latlng.lng],'Selected map location'));
+  document.getElementById('search-btn').addEventListener('click',async()=>{const q=document.getElementById('location-search').value.trim();if(!q)return;const btn=document.getElementById('search-btn');btn.textContent='Searching…';try{const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q));const d=await r.json();if(!d.length){alert('Location not found. Try a nearby town or click directly on the map.');return;}const coords=[Number(d[0].lat),Number(d[0].lon)];fieldMap.setView(coords,12);updateLocation(coords,d[0].display_name.split(',').slice(0,2).join(','));}catch(e){alert('Search needs an internet connection. You can still select a point directly on the map.');}finally{btn.textContent='Find location';}});
+  document.getElementById('reset-map').addEventListener('click',()=>{fieldMap.setView(start,11);document.getElementById('location-search').value='Kota Bharu, Malaysia';updateLocation(start,'Kota Bharu, Malaysia');});
+  document.getElementById('analyze-btn').addEventListener('click',()=>{showPage('analysis');});
+</script>
+</body>
+</html>
