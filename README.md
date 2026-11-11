@@ -18,7 +18,7 @@ illustrative sample values and are not a validated crop model.
 Open `index.html` in a browser. No build step and no API keys. Internet access is needed for map tiles.
 
 ## Credits and sources
-Code and data used by this project, with their licenses as published by each project (please re-check before submitting):
+Code and data used by this project, with their licenses as published by each project:
 
 | What | Used for | Link |
 |---|---|---|
